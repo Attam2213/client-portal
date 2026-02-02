@@ -3,12 +3,17 @@
 # Exit on error
 set -e
 
+# Ensure we are in the script's directory
+cd "$(dirname "$0")"
+
 echo "=== Client Portal Installation Script ==="
 
 # 1. Ask for inputs
 read -p "Enter Domain Name (e.g., example.com): " DOMAIN
-read -s -p "Enter New Database Password for 'clientportal' user: " DB_PASS
-echo ""
+while [[ -z "$DB_PASS" ]]; do
+    read -s -p "Enter New Database Password for 'clientportal' user (cannot be empty): " DB_PASS
+    echo ""
+done
 
 # 2. System Updates & Dependencies
 echo "Updating system packages..."
@@ -30,10 +35,16 @@ fi
 
 # 3. Database Setup
 echo "Configuring PostgreSQL..."
+# Switch to /tmp to avoid "could not change directory to /root" permission errors
+cd /tmp
+
 # Create user and db if not exists
 sudo -u postgres psql -tc "SELECT 1 FROM pg_user WHERE usename = 'clientportal'" | grep -q 1 || sudo -u postgres psql -c "CREATE USER clientportal WITH PASSWORD '$DB_PASS';"
 sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname = 'clientportal'" | grep -q 1 || sudo -u postgres psql -c "CREATE DATABASE clientportal OWNER clientportal;"
 sudo -u postgres psql -c "ALTER USER clientportal CREATEDB;"
+
+# Return to project directory
+cd - > /dev/null
 
 # 4. App Configuration
 echo "Configuring Application..."
