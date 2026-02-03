@@ -2,11 +2,34 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Monitor, Server, Code, ArrowRight } from "lucide-react"
-import { portfolioItems, services } from "@/lib/data"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 import { Badge } from "@/components/ui/badge"
 import prisma from "@/lib/db"
+
+const services = [
+  {
+    id: "landing",
+    title: "Лендинг",
+    description: "Одностраничный сайт для вашего продукта или услуги",
+    price: "от 15 000 ₽",
+    features: ["Дизайн", "Верстка", "Адаптивность", "SEO-оптимизация"]
+  },
+  {
+    id: "corporate",
+    title: "Корпоративный сайт",
+    description: "Многостраничный сайт для вашей компании",
+    price: "от 40 000 ₽",
+    features: ["CMS", "Админ-панель", "Каталог услуг", "Новости"]
+  },
+  {
+    id: "support",
+    title: "Техническая поддержка",
+    description: "Обслуживание вашего сайта и серверов",
+    price: "от 5 000 ₽/мес",
+    features: ["Мониторинг 24/7", "Бэкапы", "Обновление ПО", "Консультации"]
+  }
+]
 
 function Header() {
   return (
@@ -49,7 +72,7 @@ export default async function LandingPage() {
     console.warn("Could not fetch portfolio items from DB, using mock data")
   }
 
-  const displayItems = dbItems.length > 0 ? dbItems : portfolioItems
+  const displayItems = dbItems
 
   return (
     <div className="flex min-h-screen flex-col">
