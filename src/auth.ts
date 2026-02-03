@@ -43,17 +43,6 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  cookies: {
-    sessionToken: {
-      name: `next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: false, // Force non-secure for testing behind proxy
-      },
-    },
-  },
   providers: [
     Credentials({
       async authorize(credentials) {

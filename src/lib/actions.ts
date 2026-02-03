@@ -8,7 +8,7 @@ import { signIn, signOut } from "@/auth"
 import { AuthError } from "next-auth"
 
 export async function logOut() {
-  await signOut();
+  await signOut({ redirectTo: "/" });
 }
 
 export async function authenticate(prevState: string | undefined, formData: FormData) {
