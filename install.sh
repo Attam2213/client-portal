@@ -41,7 +41,8 @@ REPO_URL="https://github.com/Attam2213/client-portal.git"
 if [ -d "$TARGET_DIR" ]; then
     echo "Updating existing repository in $TARGET_DIR..."
     cd "$TARGET_DIR"
-    git pull
+    git fetch --all
+    git reset --hard origin/master
 else
     echo "Cloning repository to $TARGET_DIR..."
     git clone "$REPO_URL" "$TARGET_DIR"
