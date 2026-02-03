@@ -38,7 +38,22 @@ async function getUser(email: string) {
 export const { auth, signIn, signOut, handlers } = NextAuth({
   ...authConfig,
   trustHost: true,
-  debug: true, // Включаем отладку для диагностики
+  debug: true,
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
+  },
   providers: [
     Credentials({
       async authorize(credentials) {
