@@ -3,6 +3,66 @@
 
 import prisma from "@/lib/db"
 import { revalidatePath } from "next/cache"
+import bcrypt from "bcryptjs"
+import { signIn } from "@/auth"
+import { AuthError } from "next-auth"
+
+export async function authenticate(prevState: string | undefined, formData: FormData) {
+  try {
+    await signIn('credentials', formData);
+  } catch (error) {
+    if (error instanceof AuthError) {
+      switch (error.type) {
+        case 'CredentialsSignin':
+          return 'Неверные учетные данные.';
+        default:
+          return 'Произошла ошибка при входе.';
+      }
+    }
+    throw error;
+  }
+}
+
+export async function register(prevState: string | undefined, formData: FormData) {
+  const name = formData.get("name") as string
+  const email = formData.get("email") as string
+  const password = formData.get("password") as string
+  
+  if (!email || !password) {
+    return "Email и пароль обязательны"
+  }
+  
+  try {
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    })
+
+    if (existingUser) {
+      return "Пользователь с таким email уже существует"
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10)
+
+    await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        role: "user"
+      },
+    })
+    
+    // Auto login after register (optional, but usually redirects to login)
+    // For now we just return success
+    
+  } catch (error) {
+    console.error("Registration error:", error)
+    return "Ошибка при регистрации"
+  }
+  
+  // Successful registration
+  return "success"
+}
 
 export async function createPortfolioItem(formData: FormData) {
   const title = formData.get("title") as string
