@@ -25,8 +25,6 @@ export const authConfig = {
       }
       return true;
     },
-  },
-  callbacks: {
     async jwt({ token, user }) {
       if (user) {
         // @ts-ignore
