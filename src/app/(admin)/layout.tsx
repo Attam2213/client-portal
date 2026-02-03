@@ -2,6 +2,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { LayoutDashboard, FolderKanban, Settings, LogOut } from "lucide-react"
+import { logOut } from "@/lib/actions"
 
 export default function AdminLayout({
   children,
@@ -27,12 +28,12 @@ export default function AdminLayout({
               Портфолио
             </Button>
           </Link>
-           <Link href="/">
+          <form action={logOut}>
             <Button variant="ghost" className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-900/20">
               <LogOut className="mr-2 h-4 w-4" />
               Выход
             </Button>
-          </Link>
+          </form>
         </nav>
       </aside>
       <main className="flex-1 p-6 bg-slate-50 dark:bg-slate-950">

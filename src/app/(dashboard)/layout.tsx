@@ -2,6 +2,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { LayoutDashboard, CreditCard, Settings, LogOut } from "lucide-react"
+import { logOut } from "@/lib/actions"
 
 export default function DashboardLayout({
   children,
@@ -33,12 +34,12 @@ export default function DashboardLayout({
               Настройки
             </Button>
           </Link>
-           <Link href="/">
+          <form action={logOut}>
             <Button variant="ghost" className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-100">
               <LogOut className="mr-2 h-4 w-4" />
               Выход
             </Button>
-          </Link>
+          </form>
         </nav>
       </aside>
       <main className="flex-1 p-6">

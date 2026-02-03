@@ -4,8 +4,12 @@
 import prisma from "@/lib/db"
 import { revalidatePath } from "next/cache"
 import bcrypt from "bcryptjs"
-import { signIn } from "@/auth"
+import { signIn, signOut } from "@/auth"
 import { AuthError } from "next-auth"
+
+export async function logOut() {
+  await signOut();
+}
 
 export async function authenticate(prevState: string | undefined, formData: FormData) {
   try {
