@@ -13,6 +13,7 @@ export async function logOut() {
 
 export async function authenticate(prevState: string | undefined, formData: FormData) {
   try {
+    console.log("[Action] Attempting login...");
     await signIn('credentials', Object.fromEntries(formData), { redirectTo: '/dashboard' });
   } catch (error) {
     if (error instanceof AuthError) {
@@ -24,7 +25,12 @@ export async function authenticate(prevState: string | undefined, formData: Form
       }
     }
     // Don't log NEXT_REDIRECT errors as they are expected behavior
-    if ((error as Error).message === 'NEXT_REDIRECT' || (error as any).digest?.startsWith('NEXT_REDIRECT')) {
+    const isRedirect = (error as Error).message === 'NEXT_REDIRECT' || 
+                       (error as any).digest?.startsWith('NEXT_REDIRECT') ||
+                       (error as Error).message.includes('NEXT_REDIRECT');
+
+    if (isRedirect) {
+      console.log("[Action] Redirecting...");
       throw error;
     }
     console.error("Auth error in action:", error);

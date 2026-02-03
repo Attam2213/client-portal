@@ -10,6 +10,8 @@ export const authConfig = {
       const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
       const isOnAdmin = nextUrl.pathname.startsWith('/admin');
       
+      console.log(`[Middleware] Path: ${nextUrl.pathname}, LoggedIn: ${isLoggedIn}, Role: ${auth?.user?.role}`);
+
       if (isOnAdmin) {
         // @ts-ignore
         if (isLoggedIn && auth?.user?.role === 'admin') return true;
