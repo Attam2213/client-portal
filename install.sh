@@ -41,6 +41,7 @@ REPO_URL="https://github.com/Attam2213/client-portal.git"
 if [ -d "$TARGET_DIR" ]; then
     echo "Updating existing repository in $TARGET_DIR..."
     cd "$TARGET_DIR"
+    # FORCE sync with remote to get the new 'server' folder structure
     git fetch --all
     git reset --hard origin/master
 else
@@ -67,6 +68,12 @@ else
 
     # Create server/.env
     echo "Creating server/.env..."
+    # Ensure server directory exists (it should after git pull)
+    if [ ! -d "server" ]; then
+        echo "Error: 'server' directory missing after git pull. Check repository."
+        exit 1
+    fi
+
     cat > server/.env <<EOF
 PORT=5000
 DATABASE_URL="postgresql://clientportal:${DB_PASS}@localhost:5432/clientportal"
@@ -99,23 +106,26 @@ echo "--- 5/6 Setting up Frontend ---"
 cd client
 npm install
 echo "Building Frontend..."
+# Create .env for build
+echo "VITE_API_URL=https://$DOMAIN_NAME/api" > .env.production
 npm run build
 cd ..
 
-# 7. Nginx & Deployment
-echo "--- 6/6 Configuring Nginx & Starting Services ---"
-
-# Nginx Config
-cat > /etc/nginx/sites-available/$DOMAIN_NAME <<EOF
+# 7. Nginx Setup
+echo "--- 6/6 Configuring Nginx ---"
+cat > /etc/nginx/sites-available/client-portal <<EOF
 server {
+    listen 80;
     server_name $DOMAIN_NAME;
-    root /var/www/client-portal/client/dist;
-    index index.html;
 
+    # Frontend (Static files)
     location / {
+        root /var/www/client-portal/client/dist;
+        index index.html;
         try_files \$uri \$uri/ /index.html;
     }
 
+    # Backend API Proxy
     location /api {
         proxy_pass http://localhost:5000;
         proxy_http_version 1.1;
@@ -127,16 +137,17 @@ server {
 }
 EOF
 
-ln -sf /etc/nginx/sites-available/$DOMAIN_NAME /etc/nginx/sites-enabled/
-rm -f /etc/nginx/sites-enabled/default 2>/dev/null || true
-nginx -t && systemctl reload nginx
+ln -sf /etc/nginx/sites-available/client-portal /etc/nginx/sites-enabled/
+rm -f /etc/nginx/sites-enabled/default
+nginx -t && systemctl restart nginx
 
-# Start PM2
+# 8. Start with PM2
+echo "--- Starting Application ---"
 cd server
 pm2 delete client-portal-server 2>/dev/null || true
 pm2 start dist/index.js --name client-portal-server
 pm2 save
+pm2 startup | tail -n 1 | bash 2>/dev/null || true
 
 echo "=== Installation Complete! ==="
-echo "Your site is live at https://$DOMAIN_NAME"
-echo "API is running on port 5000"
+echo "Visit http://$DOMAIN_NAME to see your site."
