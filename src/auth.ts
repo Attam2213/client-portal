@@ -5,6 +5,24 @@ import prisma from "@/lib/db"
 import bcrypt from "bcryptjs"
 import { authConfig } from "./auth.config"
 
+// Fix common environment variable issues (spaces)
+if (process.env.NEXTAUTH_URL) {
+  const originalUrl = process.env.NEXTAUTH_URL;
+  process.env.NEXTAUTH_URL = process.env.NEXTAUTH_URL.trim();
+  if (originalUrl !== process.env.NEXTAUTH_URL) {
+    console.log(`[FIX] Trimmed NEXTAUTH_URL from "${originalUrl}" to "${process.env.NEXTAUTH_URL}"`);
+  }
+}
+
+if (process.env.NEXTAUTH_SECRET) {
+    process.env.NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET.trim();
+}
+
+console.log("[DEBUG] Auth Config Check:");
+console.log(" - NEXTAUTH_URL:", process.env.NEXTAUTH_URL);
+console.log(" - NEXTAUTH_SECRET set:", !!process.env.NEXTAUTH_SECRET);
+console.log(" - NODE_ENV:", process.env.NODE_ENV);
+
 async function getUser(email: string) {
   try {
     const user = await prisma.user.findUnique({
