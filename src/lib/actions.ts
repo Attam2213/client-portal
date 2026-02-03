@@ -19,6 +19,7 @@ export async function authenticate(prevState: string | undefined, formData: Form
           return 'Произошла ошибка при входе.';
       }
     }
+    console.error("Auth error in action:", error);
     throw error;
   }
 }
