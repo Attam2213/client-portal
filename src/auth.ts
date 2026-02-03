@@ -50,7 +50,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: process.env.NODE_ENV === 'production',
+        secure: false, // Force non-secure for testing behind proxy
       },
     },
   },
