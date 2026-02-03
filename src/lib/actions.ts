@@ -42,9 +42,14 @@ export async function register(prevState: string | undefined, formData: FormData
   const name = formData.get("name") as string
   const email = (formData.get("email") as string).toLowerCase().trim()
   const password = formData.get("password") as string
+  const confirmPassword = formData.get("confirmPassword") as string
   
   if (!email || !password) {
     return "Email и пароль обязательны"
+  }
+
+  if (password !== confirmPassword) {
+    return "Пароли не совпадают"
   }
   
   try {

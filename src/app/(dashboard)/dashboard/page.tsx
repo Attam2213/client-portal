@@ -1,15 +1,38 @@
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { clientData } from "@/lib/data"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Activity, Globe, Server, CreditCard } from "lucide-react"
+import { auth } from "@/auth"
+import prisma from "@/lib/db"
+import { redirect } from "next/navigation"
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const session = await auth()
+  
+  if (!session?.user?.email) {
+    redirect("/login")
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    include: {
+      domains: true,
+      servers: true,
+    }
+  })
+
+  if (!user) {
+    // Should not happen if auth is working, but safe fallback
+    return <div>Пользователь не найден</div>
+  }
+
+  const activeServicesCount = 
+    user.domains.filter(d => d.status === 'active').length + 
+    user.servers.filter(s => s.status === 'running').length
+
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Добро пожаловать, Клиент!</h1>
+      <h1 className="text-3xl font-bold">Добро пожаловать, {user.name || "Клиент"}!</h1>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
@@ -18,7 +41,7 @@ export default function DashboardPage() {
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{clientData.balance} ₽</div>
+            <div className="text-2xl font-bold">{Number(user.balance).toFixed(2)} ₽</div>
             <p className="text-xs text-muted-foreground">Доступно для оплаты услуг</p>
           </CardContent>
         </Card>
@@ -28,7 +51,7 @@ export default function DashboardPage() {
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{clientData.domains.length + clientData.servers.length}</div>
+            <div className="text-2xl font-bold">{activeServicesCount}</div>
             <p className="text-xs text-muted-foreground">Домены и сервера</p>
           </CardContent>
         </Card>
@@ -52,17 +75,23 @@ export default function DashboardPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {clientData.domains.map((domain) => (
-                  <TableRow key={domain.id}>
-                    <TableCell className="font-medium">{domain.name}</TableCell>
-                    <TableCell>
-                        <Badge variant={domain.status === "active" ? "default" : "destructive"}>
-                            {domain.status}
-                        </Badge>
-                    </TableCell>
-                    <TableCell>{domain.expires}</TableCell>
-                  </TableRow>
-                ))}
+                {user.domains.length === 0 ? (
+                    <TableRow>
+                        <TableCell colSpan={3} className="text-center text-muted-foreground">Нет активных доменов</TableCell>
+                    </TableRow>
+                ) : (
+                    user.domains.map((domain) => (
+                    <TableRow key={domain.id}>
+                        <TableCell className="font-medium">{domain.name}</TableCell>
+                        <TableCell>
+                            <Badge variant={domain.status === "active" ? "default" : "destructive"}>
+                                {domain.status}
+                            </Badge>
+                        </TableCell>
+                        <TableCell>{domain.expiresAt.toLocaleDateString()}</TableCell>
+                    </TableRow>
+                    ))
+                )}
               </TableBody>
             </Table>
           </CardContent>
@@ -86,18 +115,24 @@ export default function DashboardPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {clientData.servers.map((server) => (
-                  <TableRow key={server.id}>
-                    <TableCell className="font-medium">{server.name}</TableCell>
-                    <TableCell>{server.ip}</TableCell>
-                    <TableCell>{server.provider}</TableCell>
-                    <TableCell>
-                        <Badge variant={server.status === "running" ? "outline" : "secondary"}>
-                            {server.status}
-                        </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {user.servers.length === 0 ? (
+                    <TableRow>
+                        <TableCell colSpan={4} className="text-center text-muted-foreground">Нет активных серверов</TableCell>
+                    </TableRow>
+                ) : (
+                    user.servers.map((server) => (
+                    <TableRow key={server.id}>
+                        <TableCell className="font-medium">{server.name}</TableCell>
+                        <TableCell>{server.ip}</TableCell>
+                        <TableCell>{server.provider}</TableCell>
+                        <TableCell>
+                            <Badge variant={server.status === "running" ? "outline" : "secondary"}>
+                                {server.status}
+                            </Badge>
+                        </TableCell>
+                    </TableRow>
+                    ))
+                )}
               </TableBody>
             </Table>
           </CardContent>

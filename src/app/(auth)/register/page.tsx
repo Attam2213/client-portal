@@ -40,6 +40,10 @@ export default function RegisterPage() {
               <Label htmlFor="password">Пароль</Label>
               <Input id="password" name="password" type="password" required minLength={6} />
             </div>
+            <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="confirmPassword">Повторите пароль</Label>
+              <Input id="confirmPassword" name="confirmPassword" type="password" required minLength={6} />
+            </div>
             {errorMessage && errorMessage !== 'success' && (
               <div className="text-sm text-red-500">
                 {errorMessage}
