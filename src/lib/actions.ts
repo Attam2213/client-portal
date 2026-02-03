@@ -24,7 +24,7 @@ export async function authenticate(prevState: string | undefined, formData: Form
       }
     }
     // Don't log NEXT_REDIRECT errors as they are expected behavior
-    if ((error as Error).message === 'NEXT_REDIRECT') {
+    if ((error as Error).message === 'NEXT_REDIRECT' || (error as any).digest?.startsWith('NEXT_REDIRECT')) {
       throw error;
     }
     console.error("Auth error in action:", error);
@@ -34,7 +34,7 @@ export async function authenticate(prevState: string | undefined, formData: Form
 
 export async function register(prevState: string | undefined, formData: FormData) {
   const name = formData.get("name") as string
-  const email = formData.get("email") as string
+  const email = (formData.get("email") as string).toLowerCase().trim()
   const password = formData.get("password") as string
   
   if (!email || !password) {
