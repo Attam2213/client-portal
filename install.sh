@@ -41,12 +41,14 @@ REPO_URL="https://github.com/Attam2213/client-portal.git"
 if [ -d "$TARGET_DIR" ]; then
     echo "Updating existing repository in $TARGET_DIR..."
     cd "$TARGET_DIR"
-    # FORCE sync with remote to get the new 'server' folder structure
+    # FORCE sync with remote master branch
     git fetch --all
+    git checkout master
     git reset --hard origin/master
 else
     echo "Cloning repository to $TARGET_DIR..."
-    git clone "$REPO_URL" "$TARGET_DIR"
+    # Explicitly clone the 'master' branch
+    git clone -b master "$REPO_URL" "$TARGET_DIR"
     cd "$TARGET_DIR"
 fi
 
@@ -68,9 +70,11 @@ else
 
     # Create server/.env
     echo "Creating server/.env..."
-    # Ensure server directory exists (it should after git pull)
+    # Ensure server directory exists (it should after cloning master)
     if [ ! -d "server" ]; then
-        echo "Error: 'server' directory missing after git pull. Check repository."
+        echo "Error: 'server' directory missing. We should be on 'master' branch."
+        echo "Current branch: $(git branch --show-current)"
+        ls -la
         exit 1
     fi
 
