@@ -13,7 +13,7 @@ export async function logOut() {
 
 export async function authenticate(prevState: string | undefined, formData: FormData) {
   try {
-    await signIn('credentials', formData);
+    await signIn('credentials', Object.fromEntries(formData), { redirectTo: '/dashboard' });
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
@@ -22,6 +22,10 @@ export async function authenticate(prevState: string | undefined, formData: Form
         default:
           return 'Произошла ошибка при входе.';
       }
+    }
+    // Don't log NEXT_REDIRECT errors as they are expected behavior
+    if ((error as Error).message === 'NEXT_REDIRECT') {
+      throw error;
     }
     console.error("Auth error in action:", error);
     throw error;
