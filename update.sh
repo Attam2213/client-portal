@@ -26,29 +26,14 @@ npm run build
 echo "Restarting PM2 process..."
 pm2 restart client-portal
 
-# 6. Update Nginx Config (if needed)
-echo "Updating Nginx configuration..."
-DOMAIN="wexa.su" # Hardcoded for this project update, or extract from env if present
-cat > /etc/nginx/sites-available/${DOMAIN} <<EOL
-server {
-    listen 80;
-    server_name ${DOMAIN} www.${DOMAIN};
-
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_set_header X-Forwarded-Host \$host;
-        proxy_set_header Origin \$http_origin;
-        proxy_cache_bypass \$http_upgrade;
-    }
-}
-EOL
-sudo nginx -t && sudo systemctl reload nginx
+# 6. Check for Nginx headers update (idempotent check)
+# We only update if X-Forwarded-Proto is missing to avoid overwriting SSL config
+if ! grep -q "X-Forwarded-Proto" /etc/nginx/sites-available/wexa.su; then
+    echo "Updating Nginx configuration for headers..."
+    # Note: This will overwrite SSL config if run. User must re-run certbot if this triggers.
+    # To be safe, we will just warn or append. 
+    # For now, let's assume the user has run the fix manually as instructed.
+    echo "Skipping automated Nginx overwrite to preserve SSL. If you have issues, run install.sh again or fix nginx config manually."
+fi
 
 echo "=== Update Complete! ==="
