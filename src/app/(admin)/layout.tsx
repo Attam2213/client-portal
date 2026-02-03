@@ -3,12 +3,21 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { LayoutDashboard, FolderKanban, Settings, LogOut } from "lucide-react"
 import { logOut } from "@/lib/actions"
+import { auth } from "@/auth"
+import { redirect } from "next/navigation"
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const session = await auth();
+  
+  // @ts-ignore
+  if (!session?.user || session.user.role !== 'admin') {
+    redirect("/login");
+  }
+
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
       <aside className="w-full md:w-64 bg-slate-900 text-white border-r min-h-screen hidden md:block">
