@@ -24,7 +24,7 @@ npm run build
 
 # 5. Restart Service
 echo "Restarting PM2 process..."
-pm2 restart client-portal
+pm2 restart client-portal --update-env
 
 # 6. Check for Nginx headers update (idempotent check)
 # We only update if X-Forwarded-Proto is missing to avoid overwriting SSL config
