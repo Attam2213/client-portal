@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String   // Хэш пароля
+  role      String   @default("user") // admin, user
+  balance   Decimal  @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  domains   Domain[]
+  servers   Server[]
+  invoices  Invoice[]
+}
+
+model PortfolioItem {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  image       String?
+  tags        String[] // Массив тегов
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Domain {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  status    String   // active, expired, pending
+  expiresAt DateTime
+  autoRenew Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Server {
+  id        String   @id @default(cuid())
+  name      String
+  ip        String
+  provider  String   // FirstVDS, Reg.ru, etc.
+  status    String   // running, stopped, maintenance
+  cost      Decimal
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Invoice {
+  id        String   @id @default(cuid())
+  amount    Decimal
+  status    String   // paid, pending, failed
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  createdAt DateTime @default(now())
+}
